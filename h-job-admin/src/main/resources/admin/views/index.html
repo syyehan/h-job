@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>H-JOB </title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../css/all-skins.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper" id="rrapp" v-cloak>
+    <header class="main-header">
+        <a href="javascript:void(0);" class="logo">
+            <span class="logo-mini"><b>HJ</b></span>
+            <span class="logo-lg"><b>H-JOB</b></span>
+        </a>
+        <nav class="navbar navbar-static-top" role="navigation">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+                <span class="sr-only">Toggle navigation</span>
+            </a>
+            <div style="float:left;color:#fff;padding:15px 10px;">分布式任务调度</div>
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <li><a href="javascript:void(0);" style="cursor:default;"><i class="fa fa-user"></i> &nbsp;<span
+                            id="username-display">未登录</span></a></li>
+                    <li><a href="javascript:void(0);" onclick="logout()"><i class="fa fa-sign-out"></i> &nbsp;退出</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="header">导航菜单</li>
+                <li class="active"><a href="#server_address.html"><i class="fa fa-server" style="color: #3498db;"></i><span>执行器地址</span></a>
+                </li>
+                <li><a href="#job_info.html"><i class="fa fa-tasks" style="color: #e74c3c;"></i><span>任务配置</span></a></li>
+                <li><a href="#job_log.html"><i class="fa fa-list-alt" style="color: #f39c12;"></i><span>调度日志</span></a></li>
+                <li><a href="#user.html"><i class="fa fa-users" style="color: #2ecc71;"></i><span>用户管理</span></a></li>
+                <li><a href="#node_info.html"><i class="fa fa-sitemap" style="color: #9b59b6;"></i><span>节点管理</span></a></li>
+            </ul>
+        </section>
+    </aside>
+
+    <div class="content-wrapper">
+
+        <section class="content" style="background:#fff;">
+            <iframe scrolling="yes" frameborder="0"
+                    style="width:100%;min-height:200px;overflow:visible;background:#fff;" :src="main"></iframe>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        Version 1.0.0
+    </footer>
+
+    <div class="control-sidebar-bg"></div>
+</div>
+
+<script src="../libs/jquery.min.js"></script>
+<script src="../libs/vue.min.js"></script>
+<script src="../libs/router.js"></script>
+<script src="../libs/bootstrap.min.js"></script>
+<script src="../libs/fastclick.min.js"></script>
+<script src="../libs/app.js"></script>
+<script src="../plugins/layer/layer.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/index.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var role = parseInt(localStorage.getItem('hjob_role'), 10);
+        if (role !== 1) {
+            var menu = document.querySelector('a[href="#user.html"]');
+            if (menu) menu.parentNode.style.display = 'none';
+        }
+
+        // 显示用户名
+        var userName = localStorage.getItem('hjob_user');
+        if (userName) {
+            try {
+                var usernameSpan = document.getElementById('username-display');
+                if (usernameSpan && userName) {
+                    usernameSpan.textContent = userName;
+                }
+            } catch (e) {
+                console.error('解析用户信息失败:', e);
+            }
+        }
+    });
+
+    function logout() {
+        // 调用后端退出接口（如果有）
+        $.post('/h-job/logout', function () {
+        }).always(function () {
+            // 清除本地存储的登录信息
+            localStorage.removeItem('hjob_token');
+            localStorage.removeItem('hjob_role');
+            localStorage.removeItem('hjob_user');
+            // 跳转到登录页
+            window.location.href = '/h-job/admin/views/login.html';
+        });
+    }
+</script>
+</body>
+</html>

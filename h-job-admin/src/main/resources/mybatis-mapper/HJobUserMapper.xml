@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.h.mapper.HJobUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.h.domain.entity.HJobUser">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="user_name" property="userName" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="role" property="role" jdbcType="TINYINT"/>
+        <result column="permission" property="permission" jdbcType="VARCHAR"/>
+        <result column="job_token" property="jobToken" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, user_name, password, role, permission,
+        create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_user
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap" parameterType="java.lang.String">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_user
+        WHERE user_name = #{userName} limit 1
+    </select>
+
+
+    <select id="selectByUsernameNotId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_user
+        WHERE user_name = #{userName} AND id != #{id} limit 1
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_user
+        ORDER BY id ASC
+    </select>
+    <select id="selectByJobToken" resultType="com.h.domain.entity.HJobUser">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_user
+        WHERE job_token = #{jobToken} limit 1
+    </select>
+
+    <insert id="insert" parameterType="com.h.domain.entity.HJobUser" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO h_job_user (user_name, password, role, permission,create_time,update_time)
+    VALUES (#{userName}, #{password}, #{role}, #{permission}, #{createTime},#{updateTime})
+</insert>
+
+    <update id="update" parameterType="com.h.domain.entity.HJobUser">
+        UPDATE h_job_user
+        <set>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="role != null">
+                role = #{role},
+            </if>
+            <if test="permission != null">
+                permission = #{permission},
+            </if>
+            <if test="jobToken != null and jobToken != ''">
+                job_token = #{jobToken},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
+    <update id="updateToken">
+        UPDATE h_job_user
+        SET job_token = #{token},
+        update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM h_job_user
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByUsername" parameterType="java.lang.String">
+        DELETE FROM h_job_user
+        WHERE user_name = #{userName}
+    </delete>
+
+    <!-- 分页查询用户 -->
+    <select id="selectByPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_user
+        <where>
+            <if test="userName != null and userName != ''">
+                AND user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+            <if test="role != null">
+                AND role= #{role}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 查询用户总数 -->
+    <select id="selectCount" resultType="int">
+        SELECT COUNT(*)
+        FROM h_job_user
+    </select>
+
+</mapper>

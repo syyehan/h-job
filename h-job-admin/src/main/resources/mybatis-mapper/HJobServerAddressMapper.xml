@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.h.mapper.HJobServerAddressMapper">
+
+    <resultMap id="BaseResultMap" type="com.h.domain.entity.HJobServerAddress">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="service_name" property="serviceName" jdbcType="VARCHAR"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="address_type" property="addressType" jdbcType="TINYINT"/>
+        <result column="nacos_namespace" property="nacosNamespace" jdbcType="VARCHAR"/>
+        <result column="nacos_group" property="nacosGroup" jdbcType="VARCHAR"/>
+        <result column="address_list" property="addressList" jdbcType="VARCHAR"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, service_name, title, address_type, nacos_namespace, nacos_group, address_list, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_server_address
+        WHERE id = #{id}
+    </select>
+
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_server_address
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectByPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_server_address
+        <where>
+            <if test="serviceName != null and serviceName != ''">
+                AND service_name LIKE CONCAT('%', #{serviceName}, '%')
+            </if>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                AND id IN
+                    <foreach collection="ids" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM h_job_server_address
+        <where>
+            <if test="serviceName != null and serviceName != ''">
+                AND service_name LIKE CONCAT('%', #{serviceName}, '%')
+            </if>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="ids != null and ids.size() > 0">
+                AND id IN
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+
+            </if>
+        </where>
+    </select>
+    <select id="selectByServiceName" resultType="com.h.domain.entity.HJobServerAddress">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_server_address
+        WHERE service_name = #{serviceName} limit 1
+    </select>
+    <select id="selectByServiceNameNotId" resultType="com.h.domain.entity.HJobServerAddress">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_server_address
+        WHERE service_name = #{serviceName} and id != #{id} limit 1
+    </select>
+
+    <insert id="insert" parameterType="com.h.domain.entity.HJobServerAddress" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_job_server_address (service_name, title, address_type, nacos_namespace, nacos_group, address_list, create_time, update_time)
+        VALUES (#{serviceName}, #{title}, #{addressType}, #{nacosNamespace}, #{nacosGroup}, #{addressList}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.h.domain.entity.HJobServerAddress">
+        UPDATE h_job_server_address
+        <set>
+
+            <if test="serviceName != null and serviceName != ''">
+                service_name = #{serviceName},
+            </if>
+            <if test="title != null and title != ''">
+                title = #{title},
+            </if>
+            <if test="addressType != null">
+                address_type = #{addressType},
+            </if>
+            <if test="nacosNamespace != null">
+                nacos_namespace = #{nacosNamespace},
+            </if>
+            <if test="nacosGroup != null">
+                nacos_group = #{nacosGroup},
+            </if>
+            <if test="addressList != null">
+                address_list = #{addressList},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM h_job_server_address
+        WHERE id = #{id}
+    </delete>
+
+
+
+</mapper>

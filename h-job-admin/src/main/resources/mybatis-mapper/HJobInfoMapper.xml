@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.h.mapper.HJobInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.h.domain.entity.HJobInfo">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="job_server_id" property="jobServerId" jdbcType="INTEGER"/>
+        <result column="job_desc" property="jobDesc" jdbcType="VARCHAR"/>
+        <result column="create_user" property="createUser" jdbcType="VARCHAR"/>
+        <result column="cron" property="cron" jdbcType="VARCHAR"/>
+        <result column="route_strategy" property="routeStrategy" jdbcType="VARCHAR"/>
+        <result column="path" property="path" jdbcType="VARCHAR"/>
+        <result column="param" property="param" jdbcType="VARCHAR"/>
+        <result column="method" property="method" jdbcType="VARCHAR"/>
+        <result column="executor_timeout" property="executorTimeout" jdbcType="INTEGER"/>
+        <result column="executor_fail_retry_count" property="executorFailRetryCount" jdbcType="INTEGER"/>
+        <result column="job_status" property="jobStatus" jdbcType="TINYINT"/>
+        <result column="job_last_time" property="jobLastTime" jdbcType="BIGINT"/>
+        <result column="job_next_time" property="jobNextTime" jdbcType="BIGINT"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, job_server_id, job_desc, create_user, cron, route_strategy, path, param, method,
+        executor_timeout, executor_fail_retry_count, job_status, job_last_time, job_next_time, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByJobServerId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE job_server_id = #{jobServerId}
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectByJobServerIds" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE job_server_id IN
+        <foreach collection="jobServerIds" item="jobServerId" open="(" separator="," close=")">
+            #{jobServerId}
+        </foreach>
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectByTriggerStatus" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE job_status = #{jobStatus}
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectByPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        <where>
+            <if test="jobDesc != null and jobDesc != ''">
+                AND job_desc LIKE CONCAT('%', #{jobDesc}, '%')
+            </if>
+            <if test="jobServerIds != null and jobServerIds.size() > 0">
+                AND job_server_id IN
+                <foreach collection="jobServerIds" item="jobServerId" open="(" separator="," close=")">
+                    #{jobServerId}
+                </foreach>
+
+            </if>
+            <if test="jobStatus != null">
+                AND job_status = #{jobStatus}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="selectCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM h_job_info
+        <where>
+            <if test="jobDesc != null and jobDesc != ''">
+                AND job_desc LIKE CONCAT('%', #{jobDesc}, '%')
+            </if>
+            <if test="jobServerIds != null and jobServerIds.size() > 0">
+                AND job_server_id IN
+                <foreach collection="jobServerIds" item="jobServerId" open="(" separator="," close=")">
+                    #{jobServerId}
+                </foreach>
+
+            </if>
+            <if test="jobStatus != null">
+                AND job_status = #{jobStatus}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectListNextTime" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE job_status = 1
+        and job_next_time <![CDATA[ <= ]]> #{nextTime}
+        ORDER BY id ASC
+        LIMIT #{size}
+
+    </select>
+    <select id="selectByJobDesc" resultType="com.h.domain.entity.HJobInfo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE job_desc = #{jobDesc} limit 1
+    </select>
+    <select id="selectByJobDescNotId" resultType="com.h.domain.entity.HJobInfo">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_info
+        WHERE job_desc = #{jobDesc} and id != #{id} limit 1
+    </select>
+
+    <insert id="insert" parameterType="com.h.domain.entity.HJobInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_job_info (job_server_id, job_desc, create_user, cron, route_strategy, path, param, method, executor_timeout, executor_fail_retry_count, job_status, job_last_time, job_next_time, create_time, update_time)
+        VALUES (#{jobServerId}, #{jobDesc}, #{createUser}, #{cron}, #{routeStrategy}, #{path}, #{param}, #{method}, #{executorTimeout}, #{executorFailRetryCount}, #{jobStatus}, #{jobLastTime}, #{jobNextTime}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.h.domain.entity.HJobInfo">
+        UPDATE h_job_info
+        <set>
+            <if test="jobServerId != null">
+                job_server_id = #{jobServerId},
+            </if>
+            <if test="jobDesc != null and jobDesc != ''">
+                job_desc = #{jobDesc},
+            </if>
+            <if test="createUser != null and createUser != ''">
+                create_user = #{createUser},
+            </if>
+            <if test="cron != null and cron != ''">
+                cron = #{cron},
+            </if>
+            <if test="routeStrategy != null and routeStrategy != ''">
+                route_strategy = #{routeStrategy},
+            </if>
+            <if test="path != null and path != ''">
+                path = #{path},
+            </if>
+            <if test="param != null">
+                param = #{param},
+            </if>
+            <if test="method != null and method != ''">
+                method = #{method},
+            </if>
+            <if test="executorTimeout != null">
+                executor_timeout = #{executorTimeout},
+            </if>
+            <if test="executorFailRetryCount != null">
+                executor_fail_retry_count = #{executorFailRetryCount},
+            </if>
+            <if test="jobLastTime != null">
+                job_last_time = #{jobLastTime},
+            </if>
+            <if test="jobNextTime != null">
+                job_next_time = #{jobNextTime},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM h_job_info
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByJobServerId" parameterType="java.lang.Long">
+        DELETE FROM h_job_info
+        WHERE job_server_id = #{jobServerId}
+    </delete>
+
+    <update id="updateTime" parameterType="com.h.domain.entity.HJobInfo"  >
+        UPDATE h_job_info
+        SET
+            job_last_time = #{jobLastTime},
+            job_next_time = #{jobNextTime}
+        WHERE id = #{id}
+        AND job_status = 1
+    </update>
+
+    <update id="changeStatus">
+        UPDATE h_job_info
+        SET
+            job_status = #{jobStatus}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

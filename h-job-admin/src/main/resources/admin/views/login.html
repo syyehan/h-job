@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 - 任务调度平台</title>
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .btn-login {
+            width: 100%;
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <h3 class="login-title">H-JOB任务调度平台</h3>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="userName">用户名</label>
+                    <input type="text" class="form-control" id="userName" name="userName" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">登录</button>
+            </form>
+            <div id="errorMsg" class="text-danger text-center" style="margin-top: 15px; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+    <script src="../libs/jquery.min.js"></script>
+    <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+    <script src="../libs/bootstrap.min.js"></script>
+
+    <script src="../js/common.js"></script>
+    <script>
+        $(function() {
+            // 登录表单提交
+            $('#loginForm').submit(function(e) {
+                e.preventDefault();
+
+                var userName = $('#userName').val();
+                var password = $('#password').val();
+
+                if (!userName || !password) {
+                    showError('请输入用户名和密码');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/h-job/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        userName: userName,
+                        password: password
+                    }),
+                    success: function(res) {
+                        if (res.code === 200) {
+                            // 登录成功，保存token和role
+                            setToken(res.data.token);
+                            localStorage.setItem('hjob_user', res.data.userName);
+                            localStorage.setItem('hjob_role', res.data.role);
+                            // 跳转到首页
+                            window.location.href = 'index.html';
+                        } else {
+                            showError(res.msg || '登录失败，请检查用户名和密码');
+                        }
+                    },
+                    error: function(xhr) {
+                        showError('登录失败，服务器错误');
+                    }
+                });
+            });
+            
+            function showError(msg) {
+                $('#errorMsg').text(msg).show();
+                setTimeout(function() {
+                    $('#errorMsg').hide();
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>

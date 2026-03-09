@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.h.mapper.HJobLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.h.domain.entity.HJobLog">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="job_server_id" property="jobServerId" jdbcType="INTEGER"/>
+        <result column="job_id" property="jobId" jdbcType="INTEGER"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="param" property="param" jdbcType="VARCHAR"/>
+        <result column="sharding" property="sharding" jdbcType="VARCHAR"/>
+        <result column="fail_retry_count" property="failRetryCount" jdbcType="INTEGER"/>
+        <result column="result_code" property="resultCode" jdbcType="INTEGER"/>
+        <result column="result_msg" property="resultMsg" jdbcType="VARCHAR"/>
+        <result column="executor_date" property="executorDate" jdbcType="TIMESTAMP"/>
+        <result column="executor_code" property="executorCode" jdbcType="INTEGER"/>
+        <result column="fail_retry_flag" property="failRetryFlag" jdbcType="INTEGER"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, job_server_id, job_id, address, param, sharding, fail_retry_count, result_code, result_msg, executor_date, executor_code, fail_retry_flag, create_time, update_time
+    </sql>
+
+    <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_log
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByJobId" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_log
+        WHERE job_id = #{jobId}
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectByExecutorCode" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_log
+        WHERE executor_code = #{executorCode}
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_log
+        ORDER BY id DESC
+    </select>
+
+    <select id="selectAllFail" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_log where fail_retry_flag = 0 AND executor_code = 2
+        ORDER BY id ASC
+        LIMIT #{size}
+    </select>
+
+
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM h_job_log
+        <where>
+            <if test="jobIds != null and jobIds.size() > 0">
+                AND job_id IN
+                <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+                    #{jobId}
+                </foreach>
+            </if>
+            <if test="executorCode != null ">
+                AND executor_code = #{executorCode}
+            </if>
+        </where>
+        ORDER BY id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+    <select id="selectPageCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM h_job_log
+        <where>
+            <if test="jobIds != null and jobIds.size() > 0">
+                AND job_id IN
+                <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+                    #{jobId}
+                </foreach>
+            </if>
+            <if test="executorCode != null ">
+                AND executor_code = #{executorCode}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.h.domain.entity.HJobLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO h_job_log (job_server_id, job_id, address, param, sharding, fail_retry_count, result_code, result_msg, executor_date, executor_code, fail_retry_flag, create_time, update_time)
+        VALUES (#{jobServerId}, #{jobId}, #{address}, #{param}, #{sharding}, #{failRetryCount}, #{resultCode}, #{resultMsg}, #{executorDate}, #{executorCode}, #{failRetryFlag}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.h.domain.entity.HJobLog">
+        UPDATE h_job_log
+        <set>
+            <if test="resultCode != null">
+                result_code = #{resultCode},
+            </if>
+            <if test="resultMsg != null">
+                result_msg = #{resultMsg},
+            </if>
+            <if test="executorDate != null">
+                executor_date = #{executorDate},
+            </if>
+            <if test="executorCode != null">
+                executor_code = #{executorCode},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateFailRetryFlag">
+        UPDATE h_job_log
+        <set>
+            <if test="failRetryFlag != null">
+                fail_retry_flag = #{failRetryFlag},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="java.lang.Long">
+        DELETE FROM h_job_log
+        WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByJobId" parameterType="java.lang.Integer">
+        DELETE FROM h_job_log
+        WHERE job_id = #{jobId}
+    </delete>
+
+    <delete id="clear">
+        DELETE FROM h_job_log
+    </delete>
+
+</mapper>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>用户管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/layer/skin/default/layer.css">
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="container-fluid" style="margin-top: 10px;">
+
+    <h2 style="font-weight: bold; font-size: 24px; margin: 0;"><i class="fa fa-users" style="color: #2ecc71;"></i> 用户管理</h2>
+
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-sm-2">
+            <input type="text" class="form-control" id="q_username" placeholder="账号">
+        </div>
+        <div class="col-sm-2">
+            <select class="form-control" id="q_role">
+                <option value="">全部角色</option>
+                <option value="0">普通用户</option>
+                <option value="1">管理员</option>
+            </select>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-primary" id="btn_query"><i class="fa fa-search"></i> 查询</button>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-default" id="btn_reset"><i class="fa fa-refresh"></i> 重置</button>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-success" id="btn_add"><i class="fa fa-plus"></i> 新增</button>
+        </div>
+        <!--        <div class="col-sm-1">-->
+        <!--            <button class="btn btn-warning" id="btn_update"><i class="fa fa-pencil-square-o"></i> 修改</button>-->
+        <!--        </div>-->
+        <!--        <div class="col-sm-1">-->
+        <!--            <button class="btn btn-danger" id="btn_del"><i class="fa fa-trash-o"></i> 删除</button>-->
+        <!--        </div>-->
+    </div>
+
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-xs-12">
+            <table class="table table-bordered table-hover" id="dataTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>账号</th>
+                    <th>角色</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-sm-6">
+            <!-- 留空，让分页靠右 -->
+        </div>
+        <div class="col-sm-6">
+            <nav style="text-align: right;">
+                <ul class="pagination" id="pagination"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- 新增/修改弹窗 -->
+<style>
+    /* 简单直接的样式 */
+    #modalDiv .form-group {
+        margin-bottom: 15px;
+        padding: 0 15px;
+    }
+
+    #modalDiv label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: normal;
+        text-align: left;
+    }
+
+    #modalDiv .form-control {
+        width: 100%;
+        text-align: left;
+    }
+
+    #modalDiv select.form-control {
+        text-align: left;
+    }
+
+    #modalDiv .permission-section {
+        border: 1px solid #ddd;
+        padding: 10px;
+        max-height: 150px;
+        overflow-y: auto;
+        margin-top: 5px;
+    }
+
+    #modalDiv .checkbox-item {
+        margin-bottom: 5px;
+        white-space: nowrap;
+    }
+
+    #modalDiv .checkbox-item label {
+        margin-bottom: 0;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    #modalDiv .help-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 12px;
+    }
+
+    /* 2列布局样式 */
+    #modalDiv .permission-section table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #modalDiv .permission-section td {
+        width: 50%;
+        padding: 2px 5px;
+        vertical-align: top;
+    }
+</style>
+
+<div id="modalDiv" style="display:none;">
+    <form class="form-vertical" id="form1" style="padding: 20px 0;">
+        <div class="form-group">
+            <label>账号 <span style="color: red;">*</span></label>
+            <input type="text" class="form-control" name="userName" placeholder="账号" required>
+            <span class="help-text" style="color: #e74c3c; display: none;" id="userNameError">请输入账号</span>
+        </div>
+
+        <div class="form-group">
+            <label>密码 <span style="color: red;">*</span></label>
+            <input type="text" class="form-control" name="password" placeholder="密码" required>
+            <span class="help-text" style="color: #e74c3c; display: none;" id="passwordError">请输入密码</span>
+        </div>
+
+        <div class="form-group">
+            <label>角色 <span style="color: red;">*</span></label>
+            <select class="form-control" name="role" required>
+                <option value="">请选择角色</option>
+                <option value="0">普通用户</option>
+                <option value="1">管理员</option>
+            </select>
+            <span class="help-text" style="color: #e74c3c; display: none;" id="roleError">请选择角色</span>
+        </div>
+
+        <div class="form-group" id="permissionGroup">
+            <label>权限 <span id="permissionStar" style="color: red; display: none;">*</span></label>
+            <div class="permission-section">
+                <div class="checkbox-item">
+                    <label><input type="checkbox" name="permission" value=""> 加载中...</label>
+                </div>
+            </div>
+            <span class="help-text">选择该用户可以访问的执行器</span>
+            <span class="help-text" style="color: #e74c3c; display: none;"
+                  id="permissionError">请至少选择一个权限</span>
+        </div>
+    </form>
+</div>
+
+<script src="../libs/jquery.min.js"></script>
+<script src="../plugins/layer/layer.js"></script>
+<script src="../libs/bootstrap.min.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/common/pagination.js"></script>
+<script src="../js/user.js"></script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>任务配置管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/layer/skin/default/layer.css">
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+<div class="container-fluid" style="margin-top: 10px;">
+    <h2 style="font-weight: bold; font-size: 24px; margin: 0;"><i class="fa fa-tasks" style="color: #e74c3c;"></i> 任务配置</h2>
+
+    <div class="row" style="margin-top: 10px;">
+
+        <div class="col-sm-2">
+            <select class="form-control" id="q_serviceName">
+                <option value="">全部服务</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <select class="form-control" id="q_jobStatus">
+                <option value="">全部状态</option>
+                <option value="0">停止</option>
+                <option value="1">运行</option>
+            </select>
+        </div>
+        <div class="col-sm-2">
+            <input type="text" class="form-control" id="q_jobDesc" placeholder="任务描述">
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-primary" id="btn_query"><i class="fa fa-search"></i> 查询</button>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-default" id="btn_reset"><i class="fa fa-refresh"></i> 重置</button>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn btn-success" id="btn_add"><i class="fa fa-plus"></i> 新增</button>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-xs-12">
+            <table class="table table-bordered table-hover" id="dataTable">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>服务名称</th>
+                    <th>任务</th>
+                    <th>调用方式</th>
+                    <th>Cron表达式</th>
+                    <th>路由策略</th>
+                    <th>调用路径</th>
+                    <th>调度状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 10px;">
+        <div class="col-sm-6">
+            <!-- 留空，让分页靠右 -->
+        </div>
+        <div class="col-sm-6">
+            <nav style="text-align: right;">
+                <ul class="pagination" id="pagination"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<div id="modalDiv" style="display:none;">
+    <form class="form-horizontal" id="form1">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">服务名称 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <select class="form-control" name="jobServerId"></select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">任务 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="jobDesc" placeholder="任务描述">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">创建人 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="createUser" placeholder="创建人">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Cron表达式 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="cron" placeholder="如: */5 * * * * ?">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">路由策略 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <select class="form-control" name="routeStrategy">
+                    <option value="first">第一个</option>
+                    <option value="last">最后一个</option>
+                    <option value="round">轮询</option>
+                    <option value="random">随机</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">调用路径 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="path" placeholder="如: /dev/test">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">调用方式 <span style="color: red;">*</span></label>
+            <div class="col-sm-10">
+                <select class="form-control" name="method">
+                    <option value="">请选择</option>
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                </select>
+            </div>
+        </div>
+<!--        <div class="form-group">-->
+<!--            <label class="col-sm-2 control-label">调用参数</label>-->
+<!--            <div class="col-sm-10">-->
+<!--                <textarea class="form-control" name="param" placeholder="JSON格式" rows="3"></textarea>-->
+<!--            </div>-->
+<!--        </div>-->
+        <div class="form-group">
+            <label class="col-sm-2 control-label">超时时间(秒)</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" name="executorTimeout" placeholder="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">失败重试次数</label>
+            <div class="col-sm-10">
+                <input type="number" class="form-control" name="executorFailRetryCount" placeholder="0">
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="../libs/jquery.min.js"></script>
+<script src="../plugins/layer/layer.js"></script>
+<script src="../libs/bootstrap.min.js"></script>
+<script src="../js/common.js"></script>
+<script src="../js/common/pagination.js"></script>
+<script src="../js/job_info.js"></script>
+</body>
+</html>

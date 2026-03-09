@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>欢迎页</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/AdminLTE.min.css">
+    <link rel="stylesheet" href="../css/all-skins.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <script src="../js/common.js"></script>
+
+    <style>
+        body {
+            background-color: #ecf0f5;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<section class="content-header">
+    <h1>H-Job 分布式任务调度系统</h1>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <a href="server_address.html" style="text-decoration: none; color: inherit;">
+                <div class="info-box">
+                    <span class="info-box-icon bg-aqua"><i class="fa fa-server"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-number">执行器地址</span>
+                        <span class="info-box-text">管理</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <a href="job_info.html" style="text-decoration: none; color: inherit;">
+                <div class="info-box">
+                    <span class="info-box-icon bg-green"><i class="fa fa-tasks"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-number">任务配置</span>
+                        <span class="info-box-text">管理</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <a href="job_log.html" style="text-decoration: none; color: inherit;">
+                <div class="info-box">
+                    <span class="info-box-icon bg-yellow"><i class="fa fa-list-alt"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-number">调度日志</span>
+                        <span class="info-box-text">查看</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6 col-xs-12">
+            <a href="user.html" style="text-decoration: none; color: inherit;">
+                <div class="info-box">
+                    <span class="info-box-icon bg-red"><i class="fa fa-users"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-number">用户管理</span>
+                        <span class="info-box-text">管理</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="box box-default">
+        <div class="box-header with-border">
+            <h3 class="box-title">系统说明</h3>
+        </div>
+        <div class="box-body">
+            <p>H-JOB 是一个分布式任务调度系统，支持以下功能：</p>
+            <ul>
+                <li>服务地址管理 - 支持 Nacos 自动注册和手动录入</li>
+                <li>任务配置管理 - 支持 Cron 表达式、多种路由策略</li>
+                <li>调度日志管理 - 实时查看任务执行日志</li>
+                <li>用户权限管理 - 细粒度的权限控制</li>
+            </ul>
+        </div>
+    </div>
+</section>
+</body>
+</html>

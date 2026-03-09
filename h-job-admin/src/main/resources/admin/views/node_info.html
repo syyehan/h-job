@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>集群节点信息</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <link rel="stylesheet" href="../plugins/layer/skin/default/layer.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .leader-badge {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .follower-badge {
+            background: #95A5A6;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .status-online {
+            color: #27AE60;
+        }
+        .status-offline {
+            color: #95A5A6;
+        }
+        .node-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .node-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .cluster-overview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .metric-item {
+            text-align: center;
+            padding: 10px;
+        }
+        .metric-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid" style="margin-top: 10px;">
+    <h2 style="font-weight: bold; font-size: 24px; margin: 0;">
+        <i class="fa fa-sitemap" style="color: #9b59b6;"></i> 集群节点信息
+    </h2>
+
+    <!-- 集群概览 -->
+    <div class="row" style="margin-top: 15px;">
+        <div class="col-xs-12">
+            <div class="cluster-overview" id="clusterOverview">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="metric-item">
+                            <span class="metric-number" id="totalNodes">0</span>
+                            <span>总节点数</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="metric-item">
+                            <span class="metric-number" id="onlineNodes">0</span>
+                            <span>在线节点</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="metric-item">
+                            <span class="metric-number" id="registerLeaders">0</span>
+                            <span>监听Leader</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="metric-item">
+                            <span class="metric-number" id="calculateLeaders">0</span>
+                            <span>计算Leader</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 控制栏 -->
+<!--    <div class="row" style="margin-top: 15px;">-->
+<!--        <div class="col-sm-2">-->
+<!--            <button class="btn btn-primary" id="btn_refresh">-->
+<!--                <i class="fa fa-refresh"></i> 刷新状态-->
+<!--            </button>-->
+<!--        </div>-->
+<!--        <div class="col-sm-2">-->
+<!--            <button class="btn btn-info" id="btn_auto_refresh" data-toggle="button">-->
+<!--                <i class="fa fa-play"></i> 自动刷新-->
+<!--            </button>-->
+<!--        </div>-->
+<!--        <div class="col-sm-3">-->
+<!--            <span id="lastUpdateTime" style="color: #666; font-size: 12px;">最后更新: &#45;&#45;</span>-->
+<!--        </div>-->
+<!--        <div class="col-sm-5 text-right">-->
+<!--            <span class="label label-info">监听Leader</span>-->
+<!--            <span class="label label-success">计算Leader</span>-->
+<!--            <span class="label label-default">Follower</span>-->
+<!--        </div>-->
+<!--    </div>-->
+
+    <!-- 节点列表 -->
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-xs-12">
+            <div id="nodeList">
+                <div class="text-center" style="padding: 50px;">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                    <p>正在加载节点信息...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 浮动刷新按钮 -->
+<button class="btn btn-success btn-lg refresh-btn" id="floatingRefresh" title="立即刷新">
+    <i class="fa fa-refresh"></i>
+</button>
+
+<script src="../libs/jquery.min.js"></script>
+<script src="../plugins/layer/layer.js"></script>
+<script src="../libs/bootstrap.min.js"></script>
+<script src="../js/common.js"></script>
+<script>
+    $(document).ready(function() {
+        let autoRefreshInterval = null;
+        let isAutoRefresh = false;
+
+        // 加载集群节点信息
+        function loadClusterInfo() {
+            $('#nodeList').html('<div class="text-center" style="padding: 50px;"><i class="fa fa-spinner fa-spin fa-2x"></i><p>正在加载节点信息...</p></div>');
+            
+            $.ajax({
+                url: '/h-job/nacos/getClusterList',
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    if (res.code === 200) {
+                        renderClusterInfo(res.data);
+                        updateLastUpdateTime();
+                    } else {
+                        layer.msg('加载失败: ' + res.msg);
+                    }
+                },
+                error: function(xhr) {
+                    layer.msg('请求失败: ' + xhr.statusText);
+                    $('#nodeList').html('<div class="text-center" style="padding: 50px; color: #E74C3C;"><i class="fa fa-exclamation-triangle fa-2x"></i><p>加载失败，请检查网络连接</p></div>');
+                }
+            });
+        }
+
+        // 渲染集群信息
+        function renderClusterInfo(data) {
+            if (!data || data.length === 0) {
+                $('#nodeList').html('<div class="text-center" style="padding: 50px;"><i class="fa fa-info-circle fa-2x"></i><p>暂无节点信息</p></div>');
+                return;
+            }
+
+            // 更新概览统计
+            updateOverviewStats(data);
+
+            // 渲染节点卡片
+            let html = '';
+            data.forEach(function(node, index) {
+                const registerLeader = node.registerLeader === true || node.registerLeader === 'true';
+                const calculateLeader = node.calculateLeader === true || node.calculateLeader === 'true';
+                const ip = node.ip || 'Unknown';
+                const port = node.port || 'Unknown';
+                const online = node.online;
+                const statusClass = online ? 'status-online' : 'status-offline';
+                html += `
+                    <div class="node-card">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h4>
+                                    <i class="fa fa-server ${statusClass}"></i>
+                                    ${ip}:${port}
+                                    ${registerLeader ? '<span class="leader-badge">监听Leader</span>' : '<span class="follower-badge">监听Follower</span>'}
+                                    ${calculateLeader ? '<span class="leader-badge">计算Leader</span>' : '<span class="follower-badge">计算Follower</span>'}
+                                    ${online ? '<span class="leader-badge">节点状态:在线</span>' : '<span class="follower-badge">节点状态:离线</span>'}
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#nodeList').html(html);
+        }
+
+        // 更新概览统计
+        function updateOverviewStats(data) {
+            const totalNodes = data.length;
+            const onlineNodes = data.filter(node => 
+                node.online === true || node.online === 'true'
+            ).length;
+            const registerLeaders = data.filter(node => 
+                node.registerLeader === true || node.registerLeader === 'true'
+            ).length;
+            const calculateLeaders = data.filter(node => 
+                node.calculateLeader === true || node.calculateLeader === 'true'
+            ).length;
+
+            $('#totalNodes').text(totalNodes);
+            $('#onlineNodes').text(onlineNodes);
+            $('#registerLeaders').text(registerLeaders);
+            $('#calculateLeaders').text(calculateLeaders);
+        }
+
+        // 更新最后更新时间
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            $('#lastUpdateTime').text('最后更新: ' + timeStr);
+        }
+
+        // 手动刷新
+        $('#btn_refresh, #floatingRefresh').click(function() {
+            loadClusterInfo();
+            layer.msg('刷新完成', {icon: 1, time: 1000});
+        });
+
+        // 自动刷新切换
+        $('#btn_auto_refresh').click(function() {
+            if (isAutoRefresh) {
+                // 停止自动刷新
+                clearInterval(autoRefreshInterval);
+                $(this).html('<i class="fa fa-play"></i> 自动刷新');
+                isAutoRefresh = false;
+                layer.msg('已停止自动刷新', {icon: 1, time: 1000});
+            } else {
+                // 开始自动刷新
+                autoRefreshInterval = setInterval(loadClusterInfo, 10000); // 10秒刷新一次
+                $(this).html('<i class="fa fa-stop"></i> 停止刷新');
+                isAutoRefresh = true;
+                layer.msg('已开始自动刷新(10秒间隔)', {icon: 1, time: 1000});
+            }
+        });
+
+        // 初始加载
+        loadClusterInfo();
+
+        // 页面失去焦点时停止自动刷新，获得焦点时恢复
+        $(window).blur(function() {
+            if (isAutoRefresh) {
+                clearInterval(autoRefreshInterval);
+            }
+        }).focus(function() {
+            if (isAutoRefresh) {
+                autoRefreshInterval = setInterval(loadClusterInfo, 10000);
+            }
+        });
+    });
+
+    // 检查节点健康状态
+    function checkNodeHealth(ip, port) {
+        layer.load(2);
+        $.ajax({
+            url: `/h-job/nacos/getLeaderInfo`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(res) {
+                layer.closeAll('loading');
+                if (res.code === 200) {
+                    layer.alert(`
+                        <h4>节点健康状态</h4>
+                        <p><strong>IP:</strong> ${ip}</p>
+                        <p><strong>端口:</strong> ${port}</p>
+                        <p><strong>监听Leader:</strong> ${res.data.registerLeader ? '是' : '否'}</p>
+                        <p><strong>计算Leader:</strong> ${res.data.calculateLeader ? '是' : '否'}</p>
+                        <p><strong>检查时间:</strong> ${new Date().toLocaleString()}</p>
+                    `, {title: '健康检查结果'});
+                } else {
+                    layer.msg('健康检查失败');
+                }
+            },
+            error: function() {
+                layer.closeAll('loading');
+                layer.msg('无法连接到节点: ' + ip + ':' + port);
+            }
+        });
+    }
+</script>
+</body>
+</html>
