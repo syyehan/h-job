@@ -231,7 +231,7 @@ tail -f h-job-admin/logs/startup.log
 
 - **作者**: H
 - **邮箱**: bp_hanye@126.com
-- **项目地址**: https://www.gitee.com
+- **项目地址**: [https://www.gitee.com](https://github.com/syyehan/h-job)
 
 ## 🙏 致谢
 
